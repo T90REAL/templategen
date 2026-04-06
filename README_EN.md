@@ -5,6 +5,7 @@
 ![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue)
 ![Dependency PyYAML](https://img.shields.io/badge/Dependency-PyYAML-informational)
 ![XeLaTeX Optional](https://img.shields.io/badge/PDF-XeLaTeX%20optional-success)
+![License MIT](https://img.shields.io/badge/License-MIT-green)
 
 `templategen` turns a local competitive programming template repo into a single-file LaTeX handbook.
 
