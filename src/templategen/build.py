@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import os
 from pathlib import Path
 from pathlib import PurePosixPath
 
@@ -31,7 +30,7 @@ def build_project(request: BuildRequest) -> BuildResult:
     config = load_config(request.repo_root, request.config_path)
     scanned_tree = scan_repository(request.repo_root, config)
     document_tree = apply_overrides(scanned_tree, config)
-    _rebase_listing_paths(document_tree, request.repo_root, request.output.parent)
+    _materialize_listing_paths(document_tree, request.repo_root)
     latex = render_document(document_tree, config)
 
     request.output.parent.mkdir(parents=True, exist_ok=True)
@@ -41,15 +40,13 @@ def build_project(request: BuildRequest) -> BuildResult:
     return BuildResult(tex_path=request.output, pdf_path=pdf_path)
 
 
-def _rebase_listing_paths(
+def _materialize_listing_paths(
     directory: DirectoryNode,
     repo_root: Path,
-    output_dir: Path,
 ) -> None:
     for file_node in directory.files:
-        source_path = repo_root / file_node.relative_path
-        rebased_path = os.path.relpath(source_path, output_dir)
-        file_node.relative_path = PurePosixPath(Path(rebased_path).as_posix())
+        source_path = (repo_root / file_node.relative_path).resolve()
+        file_node.relative_path = PurePosixPath(source_path.as_posix())
 
     for child in directory.directories:
-        _rebase_listing_paths(child, repo_root, output_dir)
+        _materialize_listing_paths(child, repo_root)

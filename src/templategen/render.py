@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from string import Template
 
 from templategen.config import GeneratorConfig
 from templategen.model import DirectoryNode, FileNode
@@ -17,6 +16,8 @@ def escape_latex(text: str) -> str:
         "_": r"\_",
         "{": r"\{",
         "}": r"\}",
+        "~": r"\textasciitilde{}",
+        "^": r"\textasciicircum{}",
     }
     return "".join(replacements.get(char, char) for char in text)
 
@@ -37,11 +38,17 @@ def render_document(root: DirectoryNode, config: GeneratorConfig) -> str:
     template_path = Path(__file__).resolve().parent / "templates" / "base.tex"
     template_text = template_path.read_text(encoding="utf-8")
     body = _render_directory(root, depth=0, folded_prefix=())
-    return Template(template_text).substitute(
-        title=escape_latex(config.metadata.title),
-        author=escape_latex(config.metadata.author),
-        body=body,
+    cjk_font_line = (
+        rf"\setCJKmainfont{{{config.metadata.cjk_font}}}"
+        if config.metadata.cjk_font
+        else ""
     )
+    result = template_text
+    result = result.replace("%%TITLE%%", escape_latex(config.metadata.title))
+    result = result.replace("%%AUTHOR%%", escape_latex(config.metadata.author))
+    result = result.replace("%%CJK_FONT%%", cjk_font_line)
+    result = result.replace("%%BODY%%", body)
+    return result
 
 
 def _render_directory(

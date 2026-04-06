@@ -32,6 +32,32 @@ def test_load_config_merges_partial_yaml(tmp_path):
     assert ".git" in config.exclude_patterns
 
 
+def test_load_config_replaces_defaults_when_exclude_is_specified(tmp_path):
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    (repo_root / "templategen.yml").write_text(
+        "exclude:\n  - '*.tmp'\n",
+        encoding="utf-8",
+    )
+
+    config = load_config(repo_root, None)
+
+    assert config.exclude_patterns == ("*.tmp",)
+
+
+def test_load_config_allows_empty_exclude_override(tmp_path):
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    (repo_root / "templategen.yml").write_text(
+        "exclude: []\n",
+        encoding="utf-8",
+    )
+
+    config = load_config(repo_root, None)
+
+    assert config.exclude_patterns == ()
+
+
 def test_load_config_raises_for_invalid_yaml(tmp_path):
     repo_root = tmp_path / "repo"
     repo_root.mkdir()

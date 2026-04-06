@@ -1,5 +1,4 @@
 from pathlib import Path
-import os
 
 import pytest
 
@@ -79,10 +78,10 @@ def test_build_project_keeps_tex_when_pdf_compilation_fails(tmp_path, monkeypatc
     assert output.exists()
 
 
-def test_build_project_rebases_listing_paths_to_output_directory(tmp_path):
+def test_build_project_uses_absolute_listing_paths_for_latex(tmp_path):
     repo_root = tmp_path / "repo"
-    (repo_root / "graph").mkdir(parents=True)
-    source_file = repo_root / "graph" / "dinic.cpp"
+    (repo_root / "图论").mkdir(parents=True)
+    source_file = repo_root / "图论" / "dinic.cpp"
     source_file.write_text("int main() { return 0; }\n", encoding="utf-8")
     output = tmp_path / "out" / "template.tex"
 
@@ -95,5 +94,5 @@ def test_build_project_rebases_listing_paths_to_output_directory(tmp_path):
         )
     )
 
-    expected_path = Path(os.path.relpath(source_file, output.parent)).as_posix()
+    expected_path = source_file.resolve().as_posix()
     assert f"{{{expected_path}}}" in output.read_text(encoding="utf-8")

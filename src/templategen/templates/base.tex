@@ -8,11 +8,14 @@
 \usepackage{fancyhdr}
 
 \geometry{left=3.18cm,right=3.18cm,top=2.54cm,bottom=2.54cm}
-\setsansfont{Inconsolata}
-\setmonofont{Inconsolata}
+\IfFontExistsTF{Inconsolata}{%
+  \setsansfont{Inconsolata}
+  \setmonofont{Inconsolata}
+}{}
+%%CJK_FONT%%
 
 \pagestyle{fancy}
-\lhead{Algorithm Template}
+\lhead{%%TITLE%%}
 \chead{}
 \rhead{\thepage}
 \cfoot{\thepage}
@@ -28,12 +31,12 @@
 
 \newcommand{\templatefiletitle}[1]{\medskip\noindent\textbf{#1}\par\smallskip}
 
-\title{$title}
-\author{$author}
+\title{%%TITLE%%}
+\author{%%AUTHOR%%}
 
 \begin{document}
 \maketitle
 \tableofcontents
 \newpage
-$body
+%%BODY%%
 \end{document}

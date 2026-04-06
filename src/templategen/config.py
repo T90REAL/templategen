@@ -12,6 +12,7 @@ DEFAULT_EXCLUDE_PATTERNS = (".git", "__pycache__", "build", "dist")
 SUPPORTED_TOP_LEVEL_KEYS = {
     "title",
     "author",
+    "cjk_font",
     "include_extensions",
     "exclude",
     "rename",
@@ -23,6 +24,7 @@ SUPPORTED_TOP_LEVEL_KEYS = {
 class DocumentMetadata:
     title: str = "ICPC Templates"
     author: str = ""
+    cjk_font: str = ""
 
 
 @dataclass(frozen=True)
@@ -100,12 +102,14 @@ def load_config(repo_root: Path, config_path: Path | None) -> GeneratorConfig:
 
     title = raw.get("title", "ICPC Templates")
     author = raw.get("author", "")
-    if not isinstance(title, str) or not isinstance(author, str):
+    cjk_font = raw.get("cjk_font", "")
+    if not isinstance(title, str) or not isinstance(author, str) or not isinstance(cjk_font, str):
         raise _invalid_config(resolved_path)
 
     metadata = DocumentMetadata(
         title=title,
         author=author,
+        cjk_font=cjk_font,
     )
 
     if "include_extensions" in raw:
@@ -115,8 +119,10 @@ def load_config(repo_root: Path, config_path: Path | None) -> GeneratorConfig:
     else:
         include_extensions = DEFAULT_INCLUDE_EXTENSIONS
 
-    exclude_raw = raw.get("exclude", DEFAULT_EXCLUDE_PATTERNS)
-    exclude_patterns = _ensure_string_sequence(exclude_raw, resolved_path)
+    if "exclude" in raw:
+        exclude_patterns = _ensure_string_sequence(raw["exclude"], resolved_path)
+    else:
+        exclude_patterns = DEFAULT_EXCLUDE_PATTERNS
 
     rename_map_raw = raw.get("rename", {})
     rename_map = _ensure_string_mapping(rename_map_raw, resolved_path)
