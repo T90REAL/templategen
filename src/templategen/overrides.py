@@ -5,6 +5,7 @@ import warnings
 
 from templategen.config import GeneratorConfig
 from templategen.model import DirectoryNode
+from templategen.scanner import natural_sort_key
 
 
 def apply_overrides(root: DirectoryNode, config: GeneratorConfig) -> DirectoryNode:
@@ -61,10 +62,14 @@ def _apply_order(
         rank = {name: index for index, name in enumerate(desired)}
 
         directory.directories.sort(
-            key=lambda node: (rank.get(node.display_name, len(rank)), node.display_name.lower())
+            key=lambda node: (rank.get(node.display_name, len(rank)), natural_sort_key(node.display_name))
         )
         directory.files.sort(
-            key=lambda node: (rank.get(node.display_name, len(rank)), node.display_name.lower())
+            key=lambda node: (
+                rank.get(node.display_name, len(rank)),
+                natural_sort_key(node.display_name),
+                node.relative_path.name,
+            )
         )
 
     for child in directory.directories:

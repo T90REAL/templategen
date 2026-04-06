@@ -179,3 +179,39 @@ def test_apply_overrides_reserves_root_key_for_top_level_only():
 
     assert [directory.display_name for directory in overridden.directories] == ["alpha", "root"]
     assert [file.display_name for file in overridden.directories[1].files] == ["zeta", "alpha"]
+
+
+def test_apply_overrides_keeps_unranked_siblings_in_natural_order():
+    tree = DirectoryNode(
+        relative_path=PurePosixPath("."),
+        display_name="",
+        directories=[],
+        files=[
+            FileNode(
+                relative_path=PurePosixPath("a10.cpp"),
+                display_name="a10",
+                extension=".cpp",
+            ),
+            FileNode(
+                relative_path=PurePosixPath("main.cpp"),
+                display_name="main",
+                extension=".cpp",
+            ),
+            FileNode(
+                relative_path=PurePosixPath("a2.cpp"),
+                display_name="a2",
+                extension=".cpp",
+            ),
+        ],
+    )
+    config = GeneratorConfig(
+        metadata=DocumentMetadata(),
+        include_extensions=frozenset({".cpp"}),
+        exclude_patterns=(),
+        rename_map={},
+        order_map={"root": ("main",)},
+    )
+
+    overridden = apply_overrides(tree, config)
+
+    assert [file.display_name for file in overridden.files] == ["main", "a2", "a10"]
