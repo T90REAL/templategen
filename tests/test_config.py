@@ -93,3 +93,20 @@ def test_load_config_rejects_unordered_order_values(tmp_path):
 
     with pytest.raises(ValueError, match="Invalid config"):
         load_config(repo_root, config_path)
+
+
+@pytest.mark.parametrize(
+    ("yaml_text",),
+    [
+        ("titel: typo\n",),
+        ("1: value\n",),
+    ],
+)
+def test_load_config_rejects_unknown_top_level_keys(tmp_path, yaml_text):
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    config_path = repo_root / "templategen.yml"
+    config_path.write_text(yaml_text, encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Invalid config"):
+        load_config(repo_root, config_path)

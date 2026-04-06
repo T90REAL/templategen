@@ -9,6 +9,14 @@ import yaml
 
 DEFAULT_INCLUDE_EXTENSIONS = frozenset({".cpp", ".cc", ".c", ".h", ".hpp", ".py", ".java"})
 DEFAULT_EXCLUDE_PATTERNS = (".git", "__pycache__", "build", "dist")
+SUPPORTED_TOP_LEVEL_KEYS = {
+    "title",
+    "author",
+    "include_extensions",
+    "exclude",
+    "rename",
+    "order",
+}
 
 
 @dataclass(frozen=True)
@@ -37,6 +45,13 @@ def _missing_config(path: Path) -> ValueError:
 def _ensure_mapping(value: object, path: Path) -> Mapping[str, object]:
     if not isinstance(value, Mapping):
         raise _invalid_config(path)
+    return value
+
+
+def _ensure_supported_top_level_keys(value: Mapping[object, object], path: Path) -> Mapping[str, object]:
+    for key in value:
+        if not isinstance(key, str) or key not in SUPPORTED_TOP_LEVEL_KEYS:
+            raise _invalid_config(path)
     return value
 
 
@@ -81,6 +96,7 @@ def load_config(repo_root: Path, config_path: Path | None) -> GeneratorConfig:
     if raw is None:
         raw = {}
     raw = _ensure_mapping(raw, resolved_path)
+    raw = _ensure_supported_top_level_keys(raw, resolved_path)
 
     title = raw.get("title", "ICPC Templates")
     author = raw.get("author", "")
