@@ -17,7 +17,7 @@
 
 ```bash
 git clone https://github.com/your-username/xcpc-template.git
-cd xcpc-template
+cd templategen
 pip install -e .
 ```
 
