@@ -1,0 +1,22 @@
+title: XCPC Algorithm Template \n (Team DBL for 2024 ICPC Regional Contest)
+author: Xiao Li
+
+include_extensions:
+  - .cpp
+  - .py
+
+exclude:
+  - .git
+  - __pycache__
+  - build
+  - dist
+  - config
+
+# order:
+#   root:
+#     - 图论
+#     - 字符串
+#     - 数学
+#     - 数据结构
+#   数据结构:
+#     - 线段树
