@@ -16,7 +16,7 @@ It recursively scans the directory tree, maps directories to chapters, maps sour
 Requires Python 3.11+.
 
 ```bash
-git clone https://github.com/your-username/xcpc-template.git
+git clone https://github.com/T90REAL/templategen.git
 cd templategen
 pip install -e .
 ```
