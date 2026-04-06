@@ -132,3 +132,38 @@ def test_scan_repository_warns_and_skips_unreadable_paths(tmp_path, monkeypatch)
 
     assert [directory.display_name for directory in tree.directories] == ["ok"]
     assert [file.display_name for file in tree.directories[0].files] == ["good"]
+
+
+def test_scan_repository_excludes_nested_wildcard_component_patterns(tmp_path):
+    repo_root = tmp_path / "repo"
+    (repo_root / "src" / "build123").mkdir(parents=True)
+    (repo_root / "src" / "keep").mkdir(parents=True)
+    (repo_root / "src" / "build123" / "blocked.cpp").write_text("int blocked = 0;\n", encoding="utf-8")
+    (repo_root / "src" / "keep" / "kept.cpp").write_text("int kept = 0;\n", encoding="utf-8")
+    (repo_root / "templategen.yml").write_text(
+        "exclude:\n"
+        "  - build*\n",
+        encoding="utf-8",
+    )
+
+    tree = scan_repository(repo_root, load_config(repo_root, None))
+
+    src_dir = tree.directories[0]
+    assert [directory.display_name for directory in src_dir.directories] == ["keep"]
+    assert [file.display_name for file in src_dir.directories[0].files] == ["kept"]
+
+
+def test_scan_repository_matches_include_extensions_case_insensitively(tmp_path):
+    repo_root = tmp_path / "repo"
+    (repo_root / "src").mkdir(parents=True)
+    (repo_root / "src" / "main.cpp").write_text("int main() { return 0; }\n", encoding="utf-8")
+    (repo_root / "templategen.yml").write_text(
+        "include_extensions:\n"
+        "  - .CPP\n",
+        encoding="utf-8",
+    )
+
+    tree = scan_repository(repo_root, load_config(repo_root, None))
+
+    src_dir = tree.directories[0]
+    assert [file.display_name for file in src_dir.files] == ["main"]

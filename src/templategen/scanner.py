@@ -26,7 +26,7 @@ def natural_sort_key(value: str) -> tuple[tuple[int, int | str, str], ...]:
 def _is_excluded(relative_path: PurePosixPath, patterns: tuple[str, ...]) -> bool:
     path_text = relative_path.as_posix()
     return any(
-        fnmatch(path_text, pattern) or any(part == pattern for part in relative_path.parts)
+        fnmatch(path_text, pattern) or any(fnmatch(part, pattern) for part in relative_path.parts)
         for pattern in patterns
     )
 
@@ -35,7 +35,14 @@ def scan_repository(repo_root: Path, config: GeneratorConfig) -> DirectoryNode:
     if not repo_root.exists():
         raise FileNotFoundError(f"Repository does not exist: {repo_root}")
 
-    root = _scan_directory(repo_root, repo_root, config)
+    normalized_config = GeneratorConfig(
+        metadata=config.metadata,
+        include_extensions=frozenset(extension.lower() for extension in config.include_extensions),
+        exclude_patterns=config.exclude_patterns,
+        rename_map=config.rename_map,
+        order_map=config.order_map,
+    )
+    root = _scan_directory(repo_root, repo_root, normalized_config)
     if not root.directories and not root.files:
         raise ValueError("No includable files found")
     return root
