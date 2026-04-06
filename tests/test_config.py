@@ -40,3 +40,29 @@ def test_load_config_raises_for_invalid_yaml(tmp_path):
 
     with pytest.raises(ValueError, match="Invalid config"):
         load_config(repo_root, config_path)
+
+
+def test_load_config_raises_when_explicit_config_is_missing(tmp_path):
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+
+    with pytest.raises(ValueError, match="Config file does not exist"):
+        load_config(repo_root, repo_root / "templategen.yml")
+
+
+@pytest.mark.parametrize(
+    ("yaml_text",),
+    [
+        ("- bad\n",),
+        ("include_extensions: .cpp\n",),
+        ("order: {dp: main.cpp}\n",),
+    ],
+)
+def test_load_config_raises_for_invalid_config_schema(tmp_path, yaml_text):
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    config_path = repo_root / "templategen.yml"
+    config_path.write_text(yaml_text, encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Invalid config"):
+        load_config(repo_root, config_path)
