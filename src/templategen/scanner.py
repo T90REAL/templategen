@@ -12,11 +12,15 @@ from templategen.model import DirectoryNode, FileNode
 _SORT_RE = re.compile(r"(\d+)")
 
 
-def natural_sort_key(value: str) -> list[object]:
+def natural_sort_key(value: str) -> tuple[tuple[int, int | str, str], ...]:
     parts = _SORT_RE.split(value)
-    key = [int(part) if part.isdigit() else part.lower() for part in parts]
-    key.append(value)
-    return key
+    key: list[tuple[int, int | str, str]] = []
+    for part in parts:
+        if part.isdigit():
+            key.append((1, int(part), part))
+            continue
+        key.append((0, part.lower(), part))
+    return tuple(key)
 
 
 def _is_excluded(relative_path: PurePosixPath, patterns: tuple[str, ...]) -> bool:
@@ -63,6 +67,8 @@ def _scan_directory(current: Path, repo_root: Path, config: GeneratorConfig) -> 
             continue
 
         try:
+            if child.is_symlink() and child.is_dir():
+                continue
             is_dir = child.is_dir()
         except OSError as exc:
             warnings.warn(f"Skipping unreadable path {child}: {exc}", stacklevel=2)
@@ -85,6 +91,8 @@ def _scan_directory(current: Path, repo_root: Path, config: GeneratorConfig) -> 
             )
         )
 
+    directories.sort(key=lambda directory: natural_sort_key(directory.display_name))
+    files.sort(key=lambda file_node: (natural_sort_key(file_node.display_name), file_node.relative_path.name))
     node.directories = directories
     node.files = files
     return node
