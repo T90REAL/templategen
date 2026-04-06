@@ -140,3 +140,42 @@ def test_apply_overrides_treats_empty_order_rule_as_matched():
         apply_overrides(tree, config)
 
     assert [str(item.message) for item in caught] == []
+
+
+def test_apply_overrides_reserves_root_key_for_top_level_only():
+    tree = DirectoryNode(
+        relative_path=PurePosixPath("."),
+        display_name="",
+        directories=[
+            DirectoryNode(
+                relative_path=PurePosixPath("root"),
+                display_name="root",
+                files=[
+                    FileNode(
+                        relative_path=PurePosixPath("root/zeta.cpp"),
+                        display_name="zeta",
+                        extension=".cpp",
+                    ),
+                    FileNode(
+                        relative_path=PurePosixPath("root/alpha.cpp"),
+                        display_name="alpha",
+                        extension=".cpp",
+                    ),
+                ],
+            ),
+            DirectoryNode(relative_path=PurePosixPath("alpha"), display_name="alpha"),
+        ],
+        files=[],
+    )
+    config = GeneratorConfig(
+        metadata=DocumentMetadata(),
+        include_extensions=frozenset({".cpp"}),
+        exclude_patterns=(),
+        rename_map={},
+        order_map={"root": ("alpha", "root")},
+    )
+
+    overridden = apply_overrides(tree, config)
+
+    assert [directory.display_name for directory in overridden.directories] == ["alpha", "root"]
+    assert [file.display_name for file in overridden.directories[1].files] == ["zeta", "alpha"]

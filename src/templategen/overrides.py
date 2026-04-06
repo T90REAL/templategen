@@ -22,12 +22,6 @@ def apply_overrides(root: DirectoryNode, config: GeneratorConfig) -> DirectoryNo
             warnings.warn(f"Unused order rule: {key}", stacklevel=2)
 
     return cloned
-
-
-def _path_key(relative_path) -> str:
-    return "root" if relative_path.as_posix() == "." else relative_path.as_posix()
-
-
 def _apply_rename(
     directory: DirectoryNode,
     config: GeneratorConfig,
@@ -53,8 +47,15 @@ def _apply_order(
     config: GeneratorConfig,
     matched_order: set[str],
 ) -> None:
-    key = _path_key(directory.relative_path)
-    if key in config.order_map:
+    is_top_level = directory.relative_path.as_posix() == "."
+    if is_top_level:
+        has_order_rule = "root" in config.order_map
+        key = "root"
+    else:
+        key = directory.relative_path.as_posix()
+        has_order_rule = key in config.order_map and key != "root"
+
+    if has_order_rule:
         matched_order.add(key)
         desired = config.order_map[key]
         rank = {name: index for index, name in enumerate(desired)}
