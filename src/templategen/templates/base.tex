@@ -1,0 +1,39 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage{xeCJK}
+\usepackage{amsmath,amsthm}
+\usepackage{listings,xcolor}
+\usepackage{geometry}
+\usepackage{fontspec}
+\usepackage[colorlinks]{hyperref}
+\usepackage{fancyhdr}
+
+\geometry{left=3.18cm,right=3.18cm,top=2.54cm,bottom=2.54cm}
+\setsansfont{Inconsolata}
+\setmonofont{Inconsolata}
+
+\pagestyle{fancy}
+\lhead{Algorithm Template}
+\chead{}
+\rhead{\thepage}
+\cfoot{\thepage}
+
+\lstset{
+    numbers=left,
+    breaklines=true,
+    showstringspaces=false,
+    basicstyle=\small\ttfamily,
+    frame=single,
+    columns=fullflexible
+}
+
+\newcommand{\templatefiletitle}[1]{\medskip\noindent\textbf{#1}\par\smallskip}
+
+\title{$title}
+\author{$author}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+$body
+\end{document}
