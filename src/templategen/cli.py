@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 from pathlib import Path
+import sys
 
 from templategen.build import BuildRequest, build_project
 
@@ -39,12 +40,20 @@ def parse_args(argv: list[str] | None = None) -> CLIOptions:
 def main(argv: list[str] | None = None) -> int:
     options = parse_args(argv)
     output = options.output or Path("output/template.tex")
-    build_project(
-        BuildRequest(
-            repo_root=options.repo_root,
-            output=output,
-            config_path=options.config_path,
-            pdf=options.pdf,
+    try:
+        result = build_project(
+            BuildRequest(
+                repo_root=options.repo_root,
+                output=output,
+                config_path=options.config_path,
+                pdf=options.pdf,
+            )
         )
-    )
+    except Exception as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+
+    print(f"Wrote TeX to {result.tex_path}")
+    if result.pdf_path is not None:
+        print(f"Wrote PDF to {result.pdf_path}")
     return 0

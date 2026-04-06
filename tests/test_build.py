@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 
 import pytest
 
@@ -23,7 +24,7 @@ def test_build_project_writes_tex_without_pdf(tmp_path):
     assert output.exists()
     assert result.tex_path == output
     assert result.pdf_path is None
-    assert r"\lstinputlisting[language=C++]{graph/dinic.cpp}" in output.read_text(encoding="utf-8")
+    assert r"\lstinputlisting[language=C++]" in output.read_text(encoding="utf-8")
 
 
 def test_build_project_invokes_compiler_when_pdf_is_enabled(tmp_path, monkeypatch):
@@ -76,3 +77,23 @@ def test_build_project_keeps_tex_when_pdf_compilation_fails(tmp_path, monkeypatc
         )
 
     assert output.exists()
+
+
+def test_build_project_rebases_listing_paths_to_output_directory(tmp_path):
+    repo_root = tmp_path / "repo"
+    (repo_root / "graph").mkdir(parents=True)
+    source_file = repo_root / "graph" / "dinic.cpp"
+    source_file.write_text("int main() { return 0; }\n", encoding="utf-8")
+    output = tmp_path / "out" / "template.tex"
+
+    build_project(
+        BuildRequest(
+            repo_root=repo_root,
+            output=output,
+            config_path=None,
+            pdf=False,
+        )
+    )
+
+    expected_path = Path(os.path.relpath(source_file, output.parent)).as_posix()
+    assert f"{{{expected_path}}}" in output.read_text(encoding="utf-8")
