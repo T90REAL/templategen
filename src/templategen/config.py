@@ -41,7 +41,7 @@ def _ensure_mapping(value: object, path: Path) -> Mapping[str, object]:
 
 
 def _ensure_string_sequence(value: object, path: Path) -> tuple[str, ...]:
-    if isinstance(value, (str, bytes)) or not isinstance(value, (list, tuple, set, frozenset)):
+    if isinstance(value, (str, bytes)) or not isinstance(value, (list, tuple)):
         raise _invalid_config(path)
     if any(not isinstance(item, str) for item in value):
         raise _invalid_config(path)
@@ -74,10 +74,12 @@ def load_config(repo_root: Path, config_path: Path | None) -> GeneratorConfig:
         raise _missing_config(resolved_path)
 
     try:
-        raw = yaml.safe_load(resolved_path.read_text(encoding="utf-8")) or {}
+        raw = yaml.safe_load(resolved_path.read_text(encoding="utf-8"))
     except yaml.YAMLError as exc:
         raise _invalid_config(resolved_path) from exc
 
+    if raw is None:
+        raw = {}
     raw = _ensure_mapping(raw, resolved_path)
 
     title = raw.get("title", "ICPC Templates")
@@ -90,8 +92,12 @@ def load_config(repo_root: Path, config_path: Path | None) -> GeneratorConfig:
         author=author,
     )
 
-    include_extensions_raw = raw.get("include_extensions", DEFAULT_INCLUDE_EXTENSIONS)
-    include_extensions = frozenset(_ensure_string_sequence(include_extensions_raw, resolved_path))
+    if "include_extensions" in raw:
+        include_extensions = frozenset(
+            _ensure_string_sequence(raw["include_extensions"], resolved_path)
+        )
+    else:
+        include_extensions = DEFAULT_INCLUDE_EXTENSIONS
 
     exclude_raw = raw.get("exclude", DEFAULT_EXCLUDE_PATTERNS)
     exclude_patterns = _ensure_string_sequence(exclude_raw, resolved_path)
