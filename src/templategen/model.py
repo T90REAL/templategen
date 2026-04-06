@@ -9,6 +9,7 @@ class FileNode:
     relative_path: PurePosixPath
     display_name: str
     extension: str
+    content: str | None = None
 
 
 @dataclass(slots=True)

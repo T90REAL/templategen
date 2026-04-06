@@ -1,7 +1,5 @@
 .DS_Store
-algotem
 .worktrees
-output
 .pytest_cache
 __pycache__
 docs

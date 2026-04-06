@@ -23,7 +23,7 @@ def test_build_project_writes_tex_without_pdf(tmp_path):
     assert output.exists()
     assert result.tex_path == output
     assert result.pdf_path is None
-    assert r"\lstinputlisting[language=C++]" in output.read_text(encoding="utf-8")
+    assert r"\begin{lstlisting}[language=C++]" in output.read_text(encoding="utf-8")
 
 
 def test_build_project_invokes_compiler_when_pdf_is_enabled(tmp_path, monkeypatch):
@@ -78,7 +78,7 @@ def test_build_project_keeps_tex_when_pdf_compilation_fails(tmp_path, monkeypatc
     assert output.exists()
 
 
-def test_build_project_uses_absolute_listing_paths_for_latex(tmp_path):
+def test_build_project_embeds_file_content_inline_for_chinese_paths(tmp_path):
     repo_root = tmp_path / "repo"
     (repo_root / "图论").mkdir(parents=True)
     source_file = repo_root / "图论" / "dinic.cpp"
@@ -94,5 +94,7 @@ def test_build_project_uses_absolute_listing_paths_for_latex(tmp_path):
         )
     )
 
-    expected_path = source_file.resolve().as_posix()
-    assert f"{{{expected_path}}}" in output.read_text(encoding="utf-8")
+    tex = output.read_text(encoding="utf-8")
+    assert r"\begin{lstlisting}[language=C++]" in tex
+    assert "int main() { return 0; }" in tex
+    assert r"\lstinputlisting" not in tex

@@ -77,15 +77,16 @@ def _render_directory(
 def _render_file(file_node: FileNode, folded_prefix: tuple[str, ...]) -> str:
     display_parts = [*folded_prefix, file_node.display_name]
     display_name = " / ".join(part for part in display_parts if part)
-    return "\n".join(
-        [
-            f"\\templatefiletitle{{{escape_latex(display_name)}}}",
-            (
-                f"\\lstinputlisting[language={language_for_extension(file_node.extension)}]"
-                f"{{{file_node.relative_path.as_posix()}}}"
-            ),
-        ]
-    )
+    lang = language_for_extension(file_node.extension)
+    title_line = f"\\templatefiletitle{{{escape_latex(display_name)}}}"
+    if file_node.content is not None:
+        body = file_node.content
+        if not body.endswith("\n"):
+            body += "\n"
+        listing = f"\\begin{{lstlisting}}[language={lang}]\n{body}\\end{{lstlisting}}"
+    else:
+        listing = f"\\lstinputlisting[language={lang}]{{{file_node.relative_path.as_posix()}}}"
+    return "\n".join([title_line, listing])
 
 
 def _heading_command(depth: int) -> str:
