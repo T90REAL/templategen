@@ -1,4 +1,4 @@
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 
 from templategen.config import load_config
 from templategen.scanner import scan_repository
@@ -35,3 +35,31 @@ def test_scan_repository_uses_natural_sort_for_files(tmp_path):
 
     dp_dir = tree.directories[0]
     assert [file.display_name for file in dp_dir.files] == ["dp2", "dp10"]
+
+
+def test_scan_repository_uses_deterministic_tiebreak_for_natural_sort(tmp_path, monkeypatch):
+    repo_root = tmp_path / "repo"
+    tie_dir = repo_root / "ties"
+    tie_dir.mkdir(parents=True)
+    for name in ("file2.cpp", "file02.cpp", "file1.cpp", "file01.cpp"):
+        (tie_dir / name).write_text("int x = 0;\n", encoding="utf-8")
+
+    original_iterdir = Path.iterdir
+
+    def reversed_tie_dir_iterdir(self):
+        children = list(original_iterdir(self))
+        if self == tie_dir:
+            return iter(reversed(children))
+        return iter(children)
+
+    monkeypatch.setattr(Path, "iterdir", reversed_tie_dir_iterdir)
+
+    tree = scan_repository(repo_root, load_config(repo_root, None))
+
+    ties = tree.directories[0]
+    assert [file.relative_path.name for file in ties.files] == [
+        "file01.cpp",
+        "file1.cpp",
+        "file02.cpp",
+        "file2.cpp",
+    ]

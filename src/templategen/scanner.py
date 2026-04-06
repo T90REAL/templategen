@@ -14,7 +14,9 @@ _SORT_RE = re.compile(r"(\d+)")
 
 def natural_sort_key(value: str) -> list[object]:
     parts = _SORT_RE.split(value)
-    return [int(part) if part.isdigit() else part.lower() for part in parts]
+    key = [int(part) if part.isdigit() else part.lower() for part in parts]
+    key.append(value)
+    return key
 
 
 def _is_excluded(relative_path: PurePosixPath, patterns: tuple[str, ...]) -> bool:
