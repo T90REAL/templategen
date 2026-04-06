@@ -4,6 +4,8 @@ import argparse
 from dataclasses import dataclass
 from pathlib import Path
 
+from templategen.build import BuildRequest, build_project
+
 
 @dataclass(frozen=True)
 class CLIOptions:
@@ -35,5 +37,14 @@ def parse_args(argv: list[str] | None = None) -> CLIOptions:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parse_args(argv)
+    options = parse_args(argv)
+    output = options.output or Path("output/template.tex")
+    build_project(
+        BuildRequest(
+            repo_root=options.repo_root,
+            output=output,
+            config_path=options.config_path,
+            pdf=options.pdf,
+        )
+    )
     return 0
