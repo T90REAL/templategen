@@ -6,6 +6,12 @@ from templategen.config import GeneratorConfig
 from templategen.model import DirectoryNode, FileNode
 
 
+def _escape_title(text: str) -> str:
+    """Escape a title string, converting \\n or actual newlines to LaTeX line breaks."""
+    lines = text.replace("\\n", "\n").split("\n")
+    return r" \\ ".join(escape_latex(line.strip()) for line in lines if line.strip())
+
+
 def escape_latex(text: str) -> str:
     replacements = {
         "\\": r"\textbackslash{}",
@@ -44,7 +50,9 @@ def render_document(root: DirectoryNode, config: GeneratorConfig) -> str:
         else ""
     )
     result = template_text
-    result = result.replace("%%TITLE%%", escape_latex(config.metadata.title))
+    title_oneline = escape_latex(config.metadata.title.replace("\\n", " ").replace("\n", " ").strip())
+    result = result.replace("%%TITLE_ONELINE%%", title_oneline)
+    result = result.replace("%%TITLE%%", _escape_title(config.metadata.title))
     result = result.replace("%%AUTHOR%%", escape_latex(config.metadata.author))
     result = result.replace("%%CJK_FONT%%", cjk_font_line)
     result = result.replace("%%BODY%%", body)
