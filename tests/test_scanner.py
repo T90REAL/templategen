@@ -100,6 +100,23 @@ def test_scan_repository_skips_directory_symlinks(tmp_path):
     assert [file.display_name for file in local.files] == ["inside"]
 
 
+def test_scan_repository_skips_file_symlinks(tmp_path):
+    repo_root = tmp_path / "repo"
+    external_root = tmp_path / "external"
+    (repo_root / "local").mkdir(parents=True)
+    external_root.mkdir(parents=True)
+    (repo_root / "local" / "inside.cpp").write_text("int local_file = 1;\n", encoding="utf-8")
+    (external_root / "outside.cpp").write_text("int external_file = 1;\n", encoding="utf-8")
+    (repo_root / "linked.cpp").symlink_to(external_root / "outside.cpp")
+
+    tree = scan_repository(repo_root, load_config(repo_root, None))
+
+    assert [directory.display_name for directory in tree.directories] == ["local"]
+    assert [file.display_name for file in tree.files] == []
+    local = tree.directories[0]
+    assert [file.display_name for file in local.files] == ["inside"]
+
+
 def test_scan_repository_warns_and_skips_unreadable_paths(tmp_path, monkeypatch):
     repo_root = tmp_path / "repo"
     unreadable_dir = repo_root / "unreadable-dir"
@@ -175,3 +192,20 @@ def test_scan_repository_raises_for_non_directory_repo_root(tmp_path):
 
     with pytest.raises(NotADirectoryError, match="Repository root is not a directory"):
         scan_repository(repo_root, load_config(tmp_path, None))
+
+
+def test_scan_repository_raises_for_unreadable_repo_root(tmp_path, monkeypatch):
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+
+    original_iterdir = Path.iterdir
+
+    def patched_iterdir(self):
+        if self == repo_root:
+            raise PermissionError("blocked root")
+        return original_iterdir(self)
+
+    monkeypatch.setattr(Path, "iterdir", patched_iterdir)
+
+    with pytest.raises(PermissionError, match="blocked root"):
+        scan_repository(repo_root, load_config(repo_root, None))

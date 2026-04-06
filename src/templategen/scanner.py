@@ -36,6 +36,10 @@ def scan_repository(repo_root: Path, config: GeneratorConfig) -> DirectoryNode:
         raise FileNotFoundError(f"Repository does not exist: {repo_root}")
     if not repo_root.is_dir():
         raise NotADirectoryError(f"Repository root is not a directory: {repo_root}")
+    try:
+        next(repo_root.iterdir(), None)
+    except OSError as exc:
+        raise type(exc)(str(exc)) from exc
 
     normalized_config = GeneratorConfig(
         metadata=config.metadata,
@@ -76,7 +80,7 @@ def _scan_directory(current: Path, repo_root: Path, config: GeneratorConfig) -> 
             continue
 
         try:
-            if child.is_symlink() and child.is_dir():
+            if child.is_symlink():
                 continue
             is_dir = child.is_dir()
         except OSError as exc:
