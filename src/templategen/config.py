@@ -30,6 +30,10 @@ def _invalid_config(path: Path) -> ValueError:
     return ValueError(f"Invalid config: {path}")
 
 
+def _missing_config(path: Path) -> ValueError:
+    return ValueError(f"Config file does not exist or is not a file: {path}")
+
+
 def _ensure_mapping(value: object, path: Path) -> Mapping[str, object]:
     if not isinstance(value, Mapping):
         raise _invalid_config(path)
@@ -56,8 +60,8 @@ def _ensure_string_mapping(value: object, path: Path) -> dict[str, str]:
 
 def load_config(repo_root: Path, config_path: Path | None) -> GeneratorConfig:
     resolved_path = config_path or (repo_root / "templategen.yml")
-    if config_path is not None and not resolved_path.exists():
-        raise ValueError(f"Config file does not exist: {resolved_path}")
+    if config_path is not None and not resolved_path.is_file():
+        raise _missing_config(resolved_path)
     if config_path is None and not resolved_path.exists():
         return GeneratorConfig(
             metadata=DocumentMetadata(),
@@ -66,6 +70,8 @@ def load_config(repo_root: Path, config_path: Path | None) -> GeneratorConfig:
             rename_map={},
             order_map={},
         )
+    if config_path is None and not resolved_path.is_file():
+        raise _missing_config(resolved_path)
 
     try:
         raw = yaml.safe_load(resolved_path.read_text(encoding="utf-8")) or {}

@@ -50,6 +50,16 @@ def test_load_config_raises_when_explicit_config_is_missing(tmp_path):
         load_config(repo_root, repo_root / "templategen.yml")
 
 
+def test_load_config_raises_when_explicit_config_is_a_directory(tmp_path):
+    repo_root = tmp_path / "repo"
+    repo_root.mkdir()
+    config_path = repo_root / "templategen.yml"
+    config_path.mkdir()
+
+    with pytest.raises(ValueError, match="Config file does not exist or is not a file"):
+        load_config(repo_root, config_path)
+
+
 @pytest.mark.parametrize(
     ("yaml_text",),
     [
