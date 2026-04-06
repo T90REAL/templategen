@@ -1,85 +1,90 @@
-template<class T> struct MinCostGraph{
-    struct edge{
-        int v, nxt;
-        T f, c;
-    };
-    int s, t, vtot, etot;
-    T flow, cost;
-    vector<T> dis;
-    vector<edge> e;
-    vector<int> head, pre, vis;
+template <class T>
+struct MinCostGraph {
+  struct edge {
+    int v, nxt;
+    T f, c;
+  };
+  int s, t, vtot, etot;
+  T flow, cost;
+  vector<T> dis;
+  vector<edge> e;
+  vector<int> head, pre, vis;
 
-    MinCostGraph(int N, int M, int _s, int _t){
-        s = _s; t = _t;
-        vtot = N; etot = 0;
- 
-        e.resize(M * 2 + 1);
-        head.assign(N + 1, -1);
-        dis.assign(N + 1, 0);
-        pre.assign(N + 1, 0);
-        vis.assign(N + 1, 0);
-    }
-    void addEdge(int u, int v, T f, T c, T f2 = 0){
-        e[etot] = {v, head[u], f, c}; head[u] = etot++;
-        e[etot] = {u, head[v], f2, -c}; head[v] = etot++;
-    }
+  MinCostGraph(int N, int M, int _s, int _t) {
+    s = _s;
+    t = _t;
+    vtot = N;
+    etot = 0;
 
-    bool spfa(){
-        T inf = numeric_limits<T>::max() / 2;
-        // TODO: change i to 0 if there is '0' node
-        for(int i = 0; i <= vtot; ++i){
-            dis[i] = inf;
-            vis[i] = 0;
-            pre[i] = -1;
-        }
-        dis[s] = 0;
-        vis[s] = 1;
-        queue<int> q;
-        q.push(s);
-        while(!q.empty()){
-            int u = q.front();
-            for(int i = head[u]; ~i; i = e[i].nxt){
-                int v = e[i].v;
-                if(e[i].f && dis[v] > dis[u] + e[i].c){
-                    dis[v] = dis[u] + e[i].c;
-                    pre[v] = i;
-                    if(!vis[v]){
-                        vis[v] = 1;
-                        q.push(v);
-                    }
-                }
-            }
-            q.pop();
-            vis[u] = 0;
-        }
-        return dis[t] != inf;
+    e.resize(M * 2 + 1);
+    head.assign(N + 1, -1);
+    dis.assign(N + 1, 0);
+    pre.assign(N + 1, 0);
+    vis.assign(N + 1, 0);
+  }
+  void addEdge(int u, int v, T f, T c, T f2 = 0) {
+    e[etot] = {v, head[u], f, c};
+    head[u] = etot++;
+    e[etot] = {u, head[v], f2, -c};
+    head[v] = etot++;
+  }
+
+  bool spfa() {
+    T inf = numeric_limits<T>::max() / 2;
+    // TODO: change i to 0 if there is '0' node
+    for (int i = 0; i <= vtot; ++i) {
+      dis[i] = inf;
+      vis[i] = 0;
+      pre[i] = -1;
     }
-    void augment(){
-        int u = t;
-        T f = numeric_limits<T>::max();
-        while(~pre[u]){
-            f = min(f, e[pre[u]].f);
-            u = e[pre[u] ^ 1].v;
+    dis[s] = 0;
+    vis[s] = 1;
+    queue<int> q;
+    q.push(s);
+    while (!q.empty()) {
+      int u = q.front();
+      for (int i = head[u]; ~i; i = e[i].nxt) {
+        int v = e[i].v;
+        if (e[i].f && dis[v] > dis[u] + e[i].c) {
+          dis[v] = dis[u] + e[i].c;
+          pre[v] = i;
+          if (!vis[v]) {
+            vis[v] = 1;
+            q.push(v);
+          }
         }
-        flow += f;
-        cost += f * dis[t];
-        u = t;
-        while(~pre[u]){
-            e[pre[u]].f -= f;
-            e[pre[u] ^ 1].f += f;
-            u = e[pre[u] ^ 1].v;
-        }
+      }
+      q.pop();
+      vis[u] = 0;
     }
-    pair<T, T> Solve(){
-        flow = cost = 0;
-        while(spfa()) augment();
-        return {flow, cost};
+    return dis[t] != inf;
+  }
+  void augment() {
+    int u = t;
+    T f = numeric_limits<T>::max();
+    while (~pre[u]) {
+      f = min(f, e[pre[u]].f);
+      u = e[pre[u] ^ 1].v;
     }
-    void init(int _s, int _t, int _vtot){
-        s = _s;
-        t = _t;
-        vtot = _vtot;
-        etot = 0;
-        for(int i = 1; i <= vtot; ++i) head[i] = -1;
+    flow += f;
+    cost += f * dis[t];
+    u = t;
+    while (~pre[u]) {
+      e[pre[u]].f -= f;
+      e[pre[u] ^ 1].f += f;
+      u = e[pre[u] ^ 1].v;
     }
+  }
+  pair<T, T> Solve() {
+    flow = cost = 0;
+    while (spfa()) augment();
+    return {flow, cost};
+  }
+  void init(int _s, int _t, int _vtot) {
+    s = _s;
+    t = _t;
+    vtot = _vtot;
+    etot = 0;
+    for (int i = 1; i <= vtot; ++i) head[i] = -1;
+  }
 };

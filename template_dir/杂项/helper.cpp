@@ -1,4 +1,5 @@
-template <typename T> void view(T x) {
+template <typename T>
+void view(T x) {
   string s = "";
   T cp = x;
   while (x) {
@@ -20,13 +21,11 @@ vector<string> Stringsplit(string str, const char split) {
 
 template <typename T_vector>
 void rotate(std::vector<std::vector<T_vector>> &A) {
-  if (empty(A))
-    return;
+  if (empty(A)) return;
   int N = A.size(), M = A[0].size();
   std::vector<std::vector<T_vector>> res(M, std::vector<T_vector>(N));
   for (int i = 0; i < N; i++)
-    for (int j = 0; j < M; j++)
-      res[M - 1 - j][i] = A[i][j];
+    for (int j = 0; j < M; j++) res[M - 1 - j][i] = A[i][j];
   A.swap(res);
 }
 
@@ -41,8 +40,7 @@ istream &operator>>(istream &is, __int128 &n) {
     } else {
       n = (n * 10) + (c ^ 48);
     }
-    if (neg)
-      n *= -1;
+    if (neg) n *= -1;
     return is;
   }
 }

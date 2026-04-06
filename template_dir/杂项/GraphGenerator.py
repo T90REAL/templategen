@@ -1,6 +1,7 @@
 import random
 from random import randint
 
+
 class DirectedGraph:
     def __init__(self):
         self.graph = {}
@@ -12,8 +13,8 @@ class DirectedGraph:
 
     def generate_random_graph(self, num_vertices, num_edges):
         for _ in range(num_edges):
-            start = random.randint(0, num_vertices-1)
-            end = random.randint(0, num_vertices-1)
+            start = random.randint(0, num_vertices - 1)
+            end = random.randint(0, num_vertices - 1)
             weight = random.randint(1, 10)
             self.add_edge(start, end, weight)
 
@@ -22,6 +23,7 @@ class DirectedGraph:
             for end in self.graph[start]:
                 # print(f"{start} -> {end} : {self.graph[start][end]}")
                 print(start, end, self.graph[start][end])
+
 
 # 生成一个带有n个顶点，m条边的图
 n, m = randint(1, 1000), randint(1, 1000)
