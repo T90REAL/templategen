@@ -54,17 +54,17 @@ def _apply_order(
     matched_order: set[str],
 ) -> None:
     key = _path_key(directory.relative_path)
-    desired = config.order_map.get(key, ())
-    if desired:
+    if key in config.order_map:
         matched_order.add(key)
-    rank = {name: index for index, name in enumerate(desired)}
+        desired = config.order_map[key]
+        rank = {name: index for index, name in enumerate(desired)}
 
-    directory.directories.sort(
-        key=lambda node: (rank.get(node.display_name, len(rank)), node.display_name.lower())
-    )
-    directory.files.sort(
-        key=lambda node: (rank.get(node.display_name, len(rank)), node.display_name.lower())
-    )
+        directory.directories.sort(
+            key=lambda node: (rank.get(node.display_name, len(rank)), node.display_name.lower())
+        )
+        directory.files.sort(
+            key=lambda node: (rank.get(node.display_name, len(rank)), node.display_name.lower())
+        )
 
     for child in directory.directories:
         _apply_order(child, config, matched_order)

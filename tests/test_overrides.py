@@ -1,4 +1,5 @@
 from pathlib import PurePosixPath
+import warnings
 
 import pytest
 
@@ -79,3 +80,63 @@ def test_apply_overrides_warns_for_unmatched_rules():
         "Unused rename rule: missing/path.cpp",
         "Unused order rule: missing",
     ]
+
+
+def test_apply_overrides_preserves_existing_order_without_matching_order_rule():
+    tree = DirectoryNode(
+        relative_path=PurePosixPath("."),
+        display_name="",
+        directories=[
+            DirectoryNode(relative_path=PurePosixPath("zeta"), display_name="zeta"),
+            DirectoryNode(relative_path=PurePosixPath("alpha"), display_name="alpha"),
+        ],
+        files=[
+            FileNode(
+                relative_path=PurePosixPath("zeta.cpp"),
+                display_name="zeta",
+                extension=".cpp",
+            ),
+            FileNode(
+                relative_path=PurePosixPath("alpha.cpp"),
+                display_name="alpha",
+                extension=".cpp",
+            ),
+        ],
+    )
+    config = GeneratorConfig(
+        metadata=DocumentMetadata(),
+        include_extensions=frozenset({".cpp"}),
+        exclude_patterns=(),
+        rename_map={},
+        order_map={"graph": ("unused",)},
+    )
+
+    overridden = apply_overrides(tree, config)
+
+    assert [directory.display_name for directory in overridden.directories] == ["zeta", "alpha"]
+    assert [file.display_name for file in overridden.files] == ["zeta", "alpha"]
+
+
+def test_apply_overrides_treats_empty_order_rule_as_matched():
+    tree = DirectoryNode(
+        relative_path=PurePosixPath("."),
+        display_name="",
+        directories=[
+            DirectoryNode(relative_path=PurePosixPath("zeta"), display_name="zeta"),
+            DirectoryNode(relative_path=PurePosixPath("alpha"), display_name="alpha"),
+        ],
+        files=[],
+    )
+    config = GeneratorConfig(
+        metadata=DocumentMetadata(),
+        include_extensions=frozenset({".cpp"}),
+        exclude_patterns=(),
+        rename_map={},
+        order_map={"root": ()},
+    )
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        apply_overrides(tree, config)
+
+    assert [str(item.message) for item in caught] == []
