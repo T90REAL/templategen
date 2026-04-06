@@ -20,7 +20,7 @@ def test_load_config_merges_partial_yaml(tmp_path):
     repo_root = tmp_path / "repo"
     repo_root.mkdir()
     (repo_root / "templategen.yml").write_text(
-        "title: Team Notebook\ninclude_extensions:\n  - .cpp\n  - .rs\n",
+        "title: Team Notebook\n",
         encoding="utf-8",
     )
 
@@ -28,7 +28,7 @@ def test_load_config_merges_partial_yaml(tmp_path):
 
     assert config.metadata.title == "Team Notebook"
     assert config.metadata.author == ""
-    assert config.include_extensions == frozenset({".cpp", ".rs"})
+    assert config.include_extensions == frozenset({".cpp", ".cc", ".c", ".h", ".hpp", ".py", ".java"})
     assert ".git" in config.exclude_patterns
 
 
@@ -56,6 +56,7 @@ def test_load_config_raises_when_explicit_config_is_missing(tmp_path):
         ("- bad\n",),
         ("include_extensions: .cpp\n",),
         ("order: {dp: main.cpp}\n",),
+        ("order: {1: [main.cpp]}\n",),
     ],
 )
 def test_load_config_raises_for_invalid_config_schema(tmp_path, yaml_text):

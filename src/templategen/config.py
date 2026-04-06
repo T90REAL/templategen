@@ -37,7 +37,7 @@ def _ensure_mapping(value: object, path: Path) -> Mapping[str, object]:
 
 
 def _ensure_string_sequence(value: object, path: Path) -> tuple[str, ...]:
-    if isinstance(value, (str, bytes)) or not isinstance(value, (list, tuple)):
+    if isinstance(value, (str, bytes)) or not isinstance(value, (list, tuple, set, frozenset)):
         raise _invalid_config(path)
     if any(not isinstance(item, str) for item in value):
         raise _invalid_config(path)
@@ -99,6 +99,8 @@ def load_config(repo_root: Path, config_path: Path | None) -> GeneratorConfig:
         key: _ensure_string_sequence(values, resolved_path)
         for key, values in order_mapping.items()
     }
+    if any(not isinstance(key, str) for key in order_map):
+        raise _invalid_config(resolved_path)
     return GeneratorConfig(
         metadata=metadata,
         include_extensions=include_extensions,
