@@ -34,6 +34,8 @@ def _is_excluded(relative_path: PurePosixPath, patterns: tuple[str, ...]) -> boo
 def scan_repository(repo_root: Path, config: GeneratorConfig) -> DirectoryNode:
     if not repo_root.exists():
         raise FileNotFoundError(f"Repository does not exist: {repo_root}")
+    if not repo_root.is_dir():
+        raise NotADirectoryError(f"Repository root is not a directory: {repo_root}")
 
     normalized_config = GeneratorConfig(
         metadata=config.metadata,

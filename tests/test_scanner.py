@@ -167,3 +167,11 @@ def test_scan_repository_matches_include_extensions_case_insensitively(tmp_path)
 
     src_dir = tree.directories[0]
     assert [file.display_name for file in src_dir.files] == ["main"]
+
+
+def test_scan_repository_raises_for_non_directory_repo_root(tmp_path):
+    repo_root = tmp_path / "repo.txt"
+    repo_root.write_text("not a directory\n", encoding="utf-8")
+
+    with pytest.raises(NotADirectoryError, match="Repository root is not a directory"):
+        scan_repository(repo_root, load_config(tmp_path, None))
