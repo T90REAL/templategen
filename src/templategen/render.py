@@ -69,15 +69,17 @@ def _render_directory(
     for child in directory.directories:
         parts.append(_render_directory(child, depth + 1, next_prefix))
     for file_node in directory.files:
-        parts.append(_render_file(file_node, next_prefix))
+        parts.append(_render_file(file_node, next_prefix, depth))
 
     return "\n".join(part for part in parts if part)
 
 
-def _render_file(file_node: FileNode, folded_prefix: tuple[str, ...]) -> str:
+def _render_file(file_node: FileNode, folded_prefix: tuple[str, ...], parent_depth: int) -> str:
     display_parts = [*folded_prefix, file_node.display_name]
     display_name = " / ".join(part for part in display_parts if part)
     lang = language_for_extension(file_node.extension)
+    toc_level = _toc_level(parent_depth + 1)
+    toc_entry = f"\\phantomsection\\addcontentsline{{toc}}{{{toc_level}}}{{{escape_latex(display_name)}}}"
     title_line = f"\\templatefiletitle{{{escape_latex(display_name)}}}"
     if file_node.content is not None:
         body = file_node.content
@@ -86,7 +88,7 @@ def _render_file(file_node: FileNode, folded_prefix: tuple[str, ...]) -> str:
         listing = f"\\begin{{lstlisting}}[language={lang}]\n{body}\\end{{lstlisting}}"
     else:
         listing = f"\\lstinputlisting[language={lang}]{{{file_node.relative_path.as_posix()}}}"
-    return "\n".join([title_line, listing])
+    return "\n".join([toc_entry, title_line, listing])
 
 
 def _heading_command(depth: int) -> str:
@@ -98,3 +100,13 @@ def _heading_command(depth: int) -> str:
         5: "\\subparagraph",
     }
     return mapping.get(depth, "\\paragraph")
+
+
+def _toc_level(depth: int) -> str:
+    return {
+        1: "section",
+        2: "subsection",
+        3: "subsubsection",
+        4: "paragraph",
+        5: "subparagraph",
+    }.get(depth, "subparagraph")
