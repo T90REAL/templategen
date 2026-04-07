@@ -2,10 +2,10 @@
 
 [English](README_EN.md) | 中文
 
-![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue)
-![Dependency PyYAML](https://img.shields.io/badge/Dependency-PyYAML-informational)
-![XeLaTeX Optional](https://img.shields.io/badge/PDF-XeLaTeX%20optional-success)
-![License MIT](https://img.shields.io/badge/License-MIT-green)
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/downloads/)
+[![Dependency PyYAML](https://img.shields.io/badge/Dependency-PyYAML-informational)](https://pypi.org/project/PyYAML/)
+[![XeLaTeX Optional](https://img.shields.io/badge/PDF-XeLaTeX%20optional-success)](https://tug.org/xetex/)
+[![License MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
 `templategen` 用来把一个本地算法模板仓自动整理成 LaTeX 手册。
 
